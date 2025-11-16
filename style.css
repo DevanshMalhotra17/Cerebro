@@ -16,10 +16,38 @@ header {
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-footer {
+.nav-tabs-container {
     background: white;
-    border-top: 1px solid #e5e7eb;
-    margin-top: 3rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.nav-tabs .nav-link {
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: #6b7280;
+    font-weight: 500;
+    padding: 1rem 1.5rem;
+    background: none;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.nav-tabs .nav-link:hover {
+    color: #1f2937;
+    border-bottom-color: #e5e7eb;
+}
+
+.nav-tabs .nav-link.active {
+    color: #3b82f6;
+    border-bottom-color: #3b82f6;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
 }
 
 .welcome-card {

@@ -20,15 +20,73 @@
         </div>
     </header>
 
+    <nav class="nav-tabs-container">
+        <div class="container">
+            <ul class="nav nav-tabs border-0">
+                <li class="nav-item">
+                    <button class="nav-link active" data-tab="dashboard">📊 Dashboard</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-tab="upload">📤 Upload</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-tab="graph">🧠 Knowledge Graph</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-tab="practice">🎯 Practice</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-tab="algorithms">💻 Algorithms</button>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
     <main class="container py-5">
-        <div class="welcome-card p-5 text-center">
-            <h2 class="h2 fw-bold text-dark mb-3">Welcome to Cerebro!</h2>
-            <p class="lead text-muted">
-                Your intelligent learning companion powered by advanced algorithms and AI.
-            </p>
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <div class="welcome-card p-5 text-center">
+                <h2 class="h2 fw-bold text-dark mb-3">Welcome to Cerebro!</h2>
+                <p class="lead text-muted">
+                    Your intelligent learning companion powered by advanced algorithms and AI.
+                </p>
+            </div>
+        </div>
+
+        <!-- Upload Tab -->
+        <div id="upload" class="tab-content">
+            <div class="welcome-card p-5">
+                <h3 class="h4 fw-bold text-dark mb-3">📤 Upload Content</h3>
+                <p class="text-muted">Upload your study materials here.</p>
+            </div>
+        </div>
+
+        <!-- Graph Tab -->
+        <div id="graph" class="tab-content">
+            <div class="welcome-card p-5">
+                <h3 class="h4 fw-bold text-dark mb-3">🧠 Knowledge Graph</h3>
+                <p class="text-muted">Visualize your knowledge connections.</p>
+            </div>
+        </div>
+
+        <!-- Practice Tab -->
+        <div id="practice" class="tab-content">
+            <div class="welcome-card p-5">
+                <h3 class="h4 fw-bold text-dark mb-3">🎯 Practice</h3>
+                <p class="text-muted">Practice with spaced repetition.</p>
+            </div>
+        </div>
+
+        <!-- Algorithms Tab -->
+        <div id="algorithms" class="tab-content">
+            <div class="welcome-card p-5">
+                <h3 class="h4 fw-bold text-dark mb-3">💻 Algorithms</h3>
+                <p class="text-muted">Visualize sorting algorithms.</p>
+            </div>
         </div>
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
