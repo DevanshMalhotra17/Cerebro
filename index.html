@@ -9,50 +9,50 @@
 </head>
 <body>
     <!-- Auth Modal -->
-    <div id="authModal" class="auth-modal">
-        <div class="auth-card">
-            <h3 class="h4 fw-bold text-center mb-4" id="authTitle">Welcome to Cerebro</h3>
-            
-            <div id="signInForm">
-                <div class="mb-3">
-                    <label class="form-label">Email</label>
-                    <input type="email" id="signInEmail" class="form-control" placeholder="your@email.com">
+    <div class="modal fade" id="authModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold">Welcome to Cerebro 🧠</h5>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Password</label>
-                    <input type="password" id="signInPassword" class="form-control" placeholder="••••••••">
-                </div>
-                <button class="btn btn-primary w-100 mb-3" onclick="signIn()">Sign In</button>
-                <p class="text-center text-muted small mb-0">
-                    Don't have an account? 
-                    <a href="#" onclick="showSignUp()" class="text-primary">Sign Up</a>
-                </p>
-                <hr class="my-3">
-                <button class="btn btn-outline-secondary w-100" onclick="continueAsGuest()">Continue as Guest</button>
-                <p class="text-muted small text-center mt-2 mb-0">Guest data won't be saved</p>
-            </div>
+                <div class="modal-body">
+                    <div id="loginForm">
+                        <h6 class="mb-3">Sign In</h6>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" id="loginEmail" placeholder="your@email.com">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Password</label>
+                            <input type="password" class="form-control" id="loginPassword" placeholder="••••••••">
+                        </div>
+                        <div class="alert alert-danger d-none" id="loginError"></div>
+                        <button class="btn btn-primary w-100 mb-2" onclick="handleLogin()">Sign In</button>
+                        <button class="btn btn-outline-secondary w-100 mb-2" onclick="switchToSignup()">Create Account</button>
+                        <button class="btn btn-outline-info w-100" onclick="continueAsGuest()">Continue as Guest</button>
+                        <p class="text-muted small mt-2 mb-0">Guest mode: Your data will be cleared when you close the browser</p>
+                    </div>
 
-            <div id="signUpForm" class="d-none">
-                <div class="mb-3">
-                    <label class="form-label">Name</label>
-                    <input type="text" id="signUpName" class="form-control" placeholder="Your name">
+                    <div id="signupForm" class="d-none">
+                        <h6 class="mb-3">Create Account</h6>
+                        <div class="mb-3">
+                            <label class="form-label">Name</label>
+                            <input type="text" class="form-control" id="signupName" placeholder="Your Name">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" id="signupEmail" placeholder="your@email.com">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Password</label>
+                            <input type="password" class="form-control" id="signupPassword" placeholder="••••••••">
+                        </div>
+                        <div class="alert alert-danger d-none" id="signupError"></div>
+                        <button class="btn btn-primary w-100 mb-2" onclick="handleSignup()">Create Account</button>
+                        <button class="btn btn-outline-secondary w-100" onclick="switchToLogin()">Back to Sign In</button>
+                    </div>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Email</label>
-                    <input type="email" id="signUpEmail" class="form-control" placeholder="your@email.com">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Password</label>
-                    <input type="password" id="signUpPassword" class="form-control" placeholder="••••••••">
-                </div>
-                <button class="btn btn-primary w-100 mb-3" onclick="signUp()">Create Account</button>
-                <p class="text-center text-muted small mb-0">
-                    Already have an account? 
-                    <a href="#" onclick="showSignIn()" class="text-primary">Sign In</a>
-                </p>
             </div>
-
-            <div id="authError" class="alert alert-danger d-none mt-3"></div>
         </div>
     </div>
 
@@ -60,17 +60,17 @@
         <div class="container">
             <div class="d-flex align-items-center justify-content-between">
                 <div class="d-flex align-items-center gap-3">
-                    <div class="logo">🧠</div>
+                    <img src="assets/logo.png" alt="Cerebro Logo" class="logo">
                     <div>
                         <h1 class="h4 mb-0 fw-bold text-dark">Cerebro</h1>
                         <p class="text-muted small mb-0">AI Learning Intelligence Platform</p>
                     </div>
                 </div>
-                <div id="userInfo" class="d-none">
-                    <div class="d-flex align-items-center gap-3">
-                        <span class="text-muted small" id="userName">Guest</span>
-                        <button class="btn btn-sm btn-outline-secondary" onclick="signOut()">Sign Out</button>
-                    </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="text-muted small" id="userDisplay">Guest</span>
+                    <button class="btn btn-sm btn-outline-danger" onclick="handleLogout()">
+                        <span id="logoutText">Clear Data</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -86,13 +86,13 @@
                     <button class="nav-link" data-tab="upload">📤 Upload</button>
                 </li>
                 <li class="nav-item">
-                    <button class="nav-link" data-tab="graph">🧠 Knowledge Graph</button>
+                    <button class="nav-link" data-tab="graph">📚 Knowledge Library</button>
                 </li>
                 <li class="nav-item">
                     <button class="nav-link" data-tab="practice">🎯 Practice</button>
                 </li>
                 <li class="nav-item">
-                    <button class="nav-link" data-tab="quiz">📝 Quiz</button>
+                    <button class="nav-link" data-tab="quiz">📝 Quiz Generator</button>
                 </li>
             </ul>
         </div>
@@ -129,7 +129,7 @@
                             <div class="stat-icon bg-green">🏆</div>
                             <div>
                                 <p class="text-muted small mb-1">Learning Streak</p>
-                                <h3 class="h3 fw-bold mb-0" id="learningStreak">0 days</h3>
+                                <h3 class="h3 fw-bold mb-0" id="learningStreak">0</h3>
                             </div>
                         </div>
                     </div>
@@ -215,9 +215,9 @@
                         </div>
                         <div class="col-md-4">
                             <div class="feature-box p-4">
-                                <div class="feature-icon mb-3">🧠</div>
-                                <h5 class="fw-bold mb-2">2. Explore Graph</h5>
-                                <p class="text-muted small">Visualize connections between concepts in your knowledge graph</p>
+                                <div class="feature-icon mb-3">📚</div>
+                                <h5 class="fw-bold mb-2">2. Browse Library</h5>
+                                <p class="text-muted small">View and manage all your concepts in an organized library</p>
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -318,7 +318,7 @@
                 </div>
 
                 <div id="graphCanvas" class="d-none">
-                    <canvas id="knowledgeGraph" width="800" height="600" style="border: 1px solid #e5e7eb; border-radius: 8px; cursor: pointer; max-width: 100%;"></canvas>
+                    <canvas id="knowledgeGraph" width="800" height="600" style="border: 1px solid #e5e7eb; border-radius: 8px; cursor: pointer;"></canvas>
                     
                     <div id="nodeDetails" class="mt-3 p-3 bg-light rounded d-none">
                         <h6 class="fw-bold mb-2" id="nodeTitle">Concept Name</h6>
@@ -453,91 +453,88 @@
 
         <div id="quiz" class="tab-content">
             <div class="welcome-card p-4">
-                <div class="d-flex align-items-center justify-content-between mb-4">
-                    <div class="d-flex align-items-center gap-2">
-                        <span style="font-size: 24px;">📝</span>
-                        <h3 class="h5 fw-bold text-dark mb-0">Knowledge Quiz</h3>
-                    </div>
-                    <div id="quizScore" class="streak-badge d-none">
-                        <span>🎯</span>
-                        <span id="quizScoreText">0/0</span>
-                    </div>
+                <div class="d-flex align-items-center gap-2 mb-4">
+                    <span style="font-size: 24px;">📝</span>
+                    <h3 class="h5 fw-bold text-dark mb-0">AI Quiz Generator</h3>
                 </div>
 
-                <div id="quizEmpty" class="text-center py-5">
-                    <div style="font-size: 64px; margin-bottom: 1rem;">📚</div>
-                    <h3 class="h4 fw-bold text-dark mb-2">No Concepts Yet</h3>
-                    <p class="text-muted">Add some concepts to start taking quizzes!</p>
-                    <button class="btn btn-primary mt-3" onclick="switchTab('upload')">
-                        Upload Content
-                    </button>
-                </div>
+                <div id="quizSetup">
+                    <p class="text-muted mb-3">Generate a custom quiz from your learned concepts</p>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Number of Questions</label>
+                        <select class="form-select" id="quizLength">
+                            <option value="5">5 Questions</option>
+                            <option value="10" selected>10 Questions</option>
+                            <option value="15">15 Questions</option>
+                            <option value="20">20 Questions</option>
+                        </select>
+                    </div>
 
-                <div id="quizStart" class="text-center py-5 d-none">
-                    <div style="font-size: 64px; margin-bottom: 1rem;">🧠</div>
-                    <h3 class="h4 fw-bold text-dark mb-2">Ready to Test Your Knowledge?</h3>
-                    <p class="text-muted mb-4">This quiz will test your understanding of your saved concepts</p>
-                    <button class="btn btn-primary btn-lg" onclick="startQuiz()">
-                        Start Quiz
+                    <div class="mb-3">
+                        <label class="form-label">Quiz Type</label>
+                        <select class="form-select" id="quizType">
+                            <option value="mixed" selected>Mixed (Multiple Choice & True/False)</option>
+                            <option value="multiple">Multiple Choice Only</option>
+                            <option value="truefalse">True/False Only</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="generateQuiz()">
+                        Generate Quiz
                     </button>
                 </div>
 
                 <div id="quizActive" class="d-none">
-                    <div class="mb-4 p-3 bg-light rounded">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="text-muted small">Question <span id="currentQuestion">1</span> of <span id="totalQuestions">5</span></span>
-                            <div class="progress" style="width: 200px; height: 8px;">
-                                <div class="progress-bar bg-success" id="quizProgress" style="width: 0%"></div>
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h5 class="mb-0">Question <span id="currentQuestion">1</span> of <span id="totalQuestions">10</span></h5>
+                        </div>
+                        <div class="text-muted">
+                            Score: <span id="quizScore" class="fw-bold text-primary">0</span>/<span id="quizTotal">0</span>
+                        </div>
+                    </div>
+
+                    <div id="quizQuestion" class="mb-4">
+                        <h4 class="mb-4" id="questionText">Question text goes here?</h4>
+                        <div id="quizOptions" class="d-flex flex-column gap-2">
+                            <!-- Options will be inserted here -->
+                        </div>
+                    </div>
+
+                    <div id="quizFeedback" class="alert d-none mb-3"></div>
+
+                    <div class="d-flex gap-2">
+                        <button id="submitAnswer" class="btn btn-primary" onclick="submitAnswer()">Submit Answer</button>
+                        <button id="nextQuestion" class="btn btn-success d-none" onclick="nextQuestion()">Next Question</button>
+                    </div>
+                </div>
+
+                <div id="quizResults" class="d-none text-center">
+                    <div style="font-size: 64px; margin-bottom: 1rem;">🎉</div>
+                    <h3 class="h3 fw-bold mb-3">Quiz Complete!</h3>
+                    <div class="row g-3 mb-4">
+                        <div class="col-4">
+                            <div class="metric-box p-3 bg-blue-light">
+                                <p class="small text-muted mb-1">Score</p>
+                                <h4 class="h4 fw-bold text-blue mb-0" id="finalScore">0%</h4>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="metric-box p-3 bg-green-light">
+                                <p class="small text-muted mb-1">Correct</p>
+                                <h4 class="h4 fw-bold text-green mb-0" id="correctAnswers">0</h4>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="metric-box p-3 bg-orange-light">
+                                <p class="small text-muted mb-1">Wrong</p>
+                                <h4 class="h4 fw-bold text-orange mb-0" id="wrongAnswers">0</h4>
                             </div>
                         </div>
                     </div>
-
-                    <div class="mb-4">
-                        <h4 class="h5 fw-bold mb-3" id="quizQuestion">What is this concept?</h4>
-                        <p class="text-muted" id="quizHint">Select the correct definition:</p>
-                    </div>
-
-                    <div id="quizOptions" class="d-flex flex-column gap-2 mb-4">
-                    </div>
-
-                    <div id="quizFeedback" class="alert d-none"></div>
-
-                    <button id="quizNextBtn" class="btn btn-primary d-none" onclick="nextQuestion()">
-                        Next Question →
-                    </button>
+                    <button class="btn btn-primary" onclick="resetQuiz()">Take Another Quiz</button>
                 </div>
-
-                <div id="quizResults" class="d-none text-center py-5">
-                    <div style="font-size: 64px; margin-bottom: 1rem;" id="resultsEmoji">🎉</div>
-                    <h3 class="h4 fw-bold text-dark mb-2">Quiz Complete!</h3>
-                    <p class="lead mb-4">
-                        You scored <span class="fw-bold text-primary" id="finalScore">0</span> out of <span class="fw-bold" id="finalTotal">0</span>
-                    </p>
-                    <div class="mb-4">
-                        <div class="progress" style="height: 20px; max-width: 400px; margin: 0 auto;">
-                            <div class="progress-bar bg-success" id="finalProgress" style="width: 0%"></div>
-                        </div>
-                    </div>
-                    <p class="text-muted mb-4" id="resultsMessage">Great work!</p>
-                    <div class="d-flex gap-2 justify-content-center">
-                        <button class="btn btn-primary" onclick="startQuiz()">
-                            Take Another Quiz
-                        </button>
-                        <button class="btn btn-outline-secondary" onclick="switchTab('dashboard')">
-                            Back to Dashboard
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="welcome-card p-4 mt-4">
-                <h5 class="fw-bold mb-3">💡 Quiz Tips</h5>
-                <ul class="text-muted small mb-0">
-                    <li>Quizzes are generated from your saved concepts</li>
-                    <li>Each quiz contains 5 random questions</li>
-                    <li>Try to answer without flipping the card first for best learning</li>
-                    <li>Review incorrect answers to improve your mastery</li>
-                </ul>
             </div>
         </div>
     </main>

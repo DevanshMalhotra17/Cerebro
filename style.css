@@ -275,3 +275,33 @@ header {
     border-radius: 20px;
     font-weight: bold;
 }
+
+.concept-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.concept-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.concept-card-header {
+    padding: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.concept-card-body {
+    padding: 1rem;
+    flex-grow: 1;
+}
+
+.concept-card-footer {
+    padding: 1rem;
+    border-top: 1px solid #e5e7eb;
+}

@@ -1,13 +1,6 @@
-// Auth state
+// Storage management based on user authentication
 let currentUser = null;
 let isGuest = false;
-
-// Session data (used for guest mode)
-let sessionData = {
-    concepts: [],
-    sessions: [],
-    users: []
-};
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', function() {
@@ -27,14 +20,6 @@ function setupEventListeners() {
             this.classList.add('active');
             const tabId = this.getAttribute('data-tab');
             document.getElementById(tabId).classList.add('active');
-
-            if (tabId === 'graph') {
-                setTimeout(initializeGraph, 100);
-            } else if (tabId === 'practice') {
-                setTimeout(initializePractice, 100);
-            } else if (tabId === 'quiz') {
-                setTimeout(initializeQuiz, 100);
-            }
         });
     });
 
@@ -44,210 +29,207 @@ function setupEventListeners() {
     }
 }
 
-// =============================================================================
-// AUTH FUNCTIONS
-// =============================================================================
-
 function checkAuth() {
-    const savedUser = localStorage.getItem('currentUser');
+    // Check if user is logged in
+    const savedUser = localStorage.getItem('cerebro_user');
+    
     if (savedUser) {
         currentUser = JSON.parse(savedUser);
         isGuest = false;
-        hideAuthModal();
-        showUserInfo();
         loadUserData();
-        updateDashboard();
+        showApp();
     } else {
-        showAuthModal();
+        // Show auth modal
+        const authModal = new bootstrap.Modal(document.getElementById('authModal'));
+        authModal.show();
     }
 }
 
-function showAuthModal() {
-    document.getElementById('authModal').style.display = 'flex';
+function showApp() {
+    updateUserDisplay();
+    updateDashboard();
+    
+    const canvas = document.getElementById('knowledgeGraph');
+    if (canvas) {
+        canvas.addEventListener('click', handleGraphClick);
+    }
 }
 
-function hideAuthModal() {
-    document.getElementById('authModal').style.display = 'none';
+function updateUserDisplay() {
+    const userDisplay = document.getElementById('userDisplay');
+    const logoutText = document.getElementById('logoutText');
+    
+    if (isGuest) {
+        userDisplay.textContent = 'Guest Mode';
+        logoutText.textContent = 'Clear Data';
+    } else if (currentUser) {
+        userDisplay.textContent = currentUser.name || currentUser.email;
+        logoutText.textContent = 'Logout';
+    }
 }
 
-function showUserInfo() {
-    document.getElementById('userInfo').classList.remove('d-none');
-    document.getElementById('userName').textContent = isGuest ? 'Guest' : currentUser.name;
+function switchToSignup() {
+    document.getElementById('loginForm').classList.add('d-none');
+    document.getElementById('signupForm').classList.remove('d-none');
 }
 
-function showSignUp() {
-    document.getElementById('signInForm').classList.add('d-none');
-    document.getElementById('signUpForm').classList.remove('d-none');
-    document.getElementById('authTitle').textContent = 'Create Account';
+function switchToLogin() {
+    document.getElementById('signupForm').classList.add('d-none');
+    document.getElementById('loginForm').classList.remove('d-none');
 }
 
-function showSignIn() {
-    document.getElementById('signUpForm').classList.add('d-none');
-    document.getElementById('signInForm').classList.remove('d-none');
-    document.getElementById('authTitle').textContent = 'Welcome to Cerebro';
-}
+function handleSignup() {
+    const name = document.getElementById('signupName').value.trim();
+    const email = document.getElementById('signupEmail').value.trim();
+    const password = document.getElementById('signupPassword').value;
+    const errorDiv = document.getElementById('signupError');
 
-function signUp() {
-    const name = document.getElementById('signUpName').value.trim();
-    const email = document.getElementById('signUpEmail').value.trim();
-    const password = document.getElementById('signUpPassword').value;
+    errorDiv.classList.add('d-none');
 
     if (!name || !email || !password) {
-        showAuthError('Please fill in all fields');
+        errorDiv.textContent = 'Please fill in all fields';
+        errorDiv.classList.remove('d-none');
         return;
     }
 
     if (password.length < 6) {
-        showAuthError('Password must be at least 6 characters');
+        errorDiv.textContent = 'Password must be at least 6 characters';
+        errorDiv.classList.remove('d-none');
         return;
     }
 
-    let users = JSON.parse(localStorage.getItem('users') || '[]');
-    
+    // Check if user already exists
+    const users = JSON.parse(localStorage.getItem('cerebro_users') || '[]');
     if (users.find(u => u.email === email)) {
-        showAuthError('Email already registered');
+        errorDiv.textContent = 'An account with this email already exists';
+        errorDiv.classList.remove('d-none');
         return;
     }
 
-    const user = {
+    // Create new user
+    const newUser = {
         id: 'user-' + Date.now(),
         name,
         email,
-        password,
+        password: btoa(password), // Simple encoding (not secure for production)
         createdAt: new Date().toISOString()
     };
 
-    users.push(user);
-    localStorage.setItem('users', JSON.stringify(users));
+    users.push(newUser);
+    localStorage.setItem('cerebro_users', JSON.stringify(users));
 
-    currentUser = { id: user.id, name: user.name, email: user.email };
-    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    // Log in the new user
+    currentUser = { id: newUser.id, name: newUser.name, email: newUser.email };
     isGuest = false;
+    localStorage.setItem('cerebro_user', JSON.stringify(currentUser));
 
-    hideAuthModal();
-    showUserInfo();
-    updateDashboard();
+    // Close modal and show app
+    bootstrap.Modal.getInstance(document.getElementById('authModal')).hide();
+    showApp();
 }
 
-function signIn() {
-    const email = document.getElementById('signInEmail').value.trim();
-    const password = document.getElementById('signInPassword').value;
+function handleLogin() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const errorDiv = document.getElementById('loginError');
+
+    errorDiv.classList.add('d-none');
 
     if (!email || !password) {
-        showAuthError('Please fill in all fields');
+        errorDiv.textContent = 'Please fill in all fields';
+        errorDiv.classList.remove('d-none');
         return;
     }
 
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const user = users.find(u => u.email === email && u.password === password);
+    const users = JSON.parse(localStorage.getItem('cerebro_users') || '[]');
+    const user = users.find(u => u.email === email && u.password === btoa(password));
 
     if (!user) {
-        showAuthError('Invalid email or password');
+        errorDiv.textContent = 'Invalid email or password';
+        errorDiv.classList.remove('d-none');
         return;
     }
 
+    // Log in the user
     currentUser = { id: user.id, name: user.name, email: user.email };
-    localStorage.setItem('currentUser', JSON.stringify(currentUser));
     isGuest = false;
+    localStorage.setItem('cerebro_user', JSON.stringify(currentUser));
 
-    hideAuthModal();
-    showUserInfo();
+    // Close modal and show app
+    bootstrap.Modal.getInstance(document.getElementById('authModal')).hide();
     loadUserData();
-    updateDashboard();
+    showApp();
 }
 
 function continueAsGuest() {
     isGuest = true;
-    currentUser = null;
-    sessionData = { concepts: [], sessions: [], users: [] };
+    currentUser = { id: 'guest', name: 'Guest' };
     
-    hideAuthModal();
-    showUserInfo();
-    updateDashboard();
+    // Clear any existing guest data
+    sessionStorage.clear();
+    
+    // Close modal and show app
+    bootstrap.Modal.getInstance(document.getElementById('authModal')).hide();
+    showApp();
 }
 
-function signOut() {
+function handleLogout() {
     if (isGuest) {
-        sessionData = { concepts: [], sessions: [], users: [] };
+        // Clear session storage
+        sessionStorage.clear();
+        location.reload();
+    } else {
+        // Save user data before logging out
+        saveUserData();
+        localStorage.removeItem('cerebro_user');
+        location.reload();
     }
-    
-    currentUser = null;
-    isGuest = false;
-    localStorage.removeItem('currentUser');
-    
-    document.getElementById('userInfo').classList.add('d-none');
-    showAuthModal();
-    showSignIn();
-    updateDashboard();
 }
 
-function showAuthError(message) {
-    const errorDiv = document.getElementById('authError');
-    errorDiv.textContent = message;
-    errorDiv.classList.remove('d-none');
-    setTimeout(() => errorDiv.classList.add('d-none'), 3000);
+// Storage functions that respect user type
+function getStorage() {
+    return isGuest ? sessionStorage : localStorage;
 }
 
-// =============================================================================
-// DATA MANAGEMENT FUNCTIONS
-// =============================================================================
+function getStorageKey(key) {
+    if (isGuest) {
+        return key;
+    }
+    return currentUser ? `${currentUser.id}_${key}` : key;
+}
+
+function saveData(key, data) {
+    const storage = getStorage();
+    storage.setItem(getStorageKey(key), JSON.stringify(data));
+}
+
+function loadData(key, defaultValue = null) {
+    const storage = getStorage();
+    const data = storage.getItem(getStorageKey(key));
+    return data ? JSON.parse(data) : defaultValue;
+}
 
 function loadUserData() {
-    if (isGuest || !currentUser) return;
-    
-    const userKey = `userData_${currentUser.id}`;
-    const userData = localStorage.getItem(userKey);
-    
-    if (userData) {
-        const parsed = JSON.parse(userData);
-        sessionData.concepts = parsed.concepts || [];
-        sessionData.sessions = parsed.sessions || [];
-    }
+    // This is called when a user logs in to load their saved data
+    updateDashboard();
 }
 
 function saveUserData() {
-    if (isGuest || !currentUser) return;
-    
-    const userKey = `userData_${currentUser.id}`;
-    localStorage.setItem(userKey, JSON.stringify({
-        concepts: sessionData.concepts,
-        sessions: sessionData.sessions
-    }));
+    // Data is automatically saved through saveData function
 }
-
-function getConcepts() {
-    return sessionData.concepts;
-}
-
-function setConcepts(concepts) {
-    sessionData.concepts = concepts;
-    saveUserData();
-}
-
-function getSessions() {
-    return sessionData.sessions;
-}
-
-function addSession(session) {
-    sessionData.sessions.push(session);
-    saveUserData();
-}
-
-// =============================================================================
-// NAVIGATION FUNCTIONS
-// =============================================================================
 
 function switchTab(tabId) {
     document.querySelector(`[data-tab="${tabId}"]`).click();
+    if (tabId === 'graph') {
+        setTimeout(initializeGraph, 100);
+    } else if (tabId === 'practice') {
+        setTimeout(initializePractice, 100);
+    }
 }
 
-// =============================================================================
-// DASHBOARD FUNCTIONS
-// =============================================================================
-
 function updateDashboard() {
-    const concepts = getConcepts();
-    const sessions = getSessions();
+    const concepts = loadData('concepts', []);
+    const sessions = loadData('sessions', []);
     
     const totalConcepts = concepts.length;
     const studySessions = sessions.length;
@@ -290,10 +272,6 @@ function updateDashboard() {
     }
 }
 
-// =============================================================================
-// UPLOAD & PARSING FUNCTIONS
-// =============================================================================
-
 let extractedConceptsData = [];
 
 async function parseDocument() {
@@ -314,9 +292,47 @@ async function parseDocument() {
     loadingDiv.classList.remove('d-none');
     
     try {
-        // Simulated AI extraction for demo (replace with actual API call)
-        const mockConcepts = extractConceptsLocally(text);
-        displayExtractedConcepts(mockConcepts);
+        const response = await fetch('http://localhost:3000/api/extract-concepts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Server error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        let content;
+        if (data.choices && data.choices[0] && data.choices[0].message) {
+            content = data.choices[0].message.content;
+        } else if (data.content && data.content[0]) {
+            content = data.content[0].text;
+        } else if (data.message) {
+            content = data.message;
+        } else {
+            throw new Error('Unexpected API response format');
+        }
+        
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+            throw new Error('Could not find JSON in AI response');
+        }
+        
+        const parsed = JSON.parse(jsonMatch[0]);
+        
+        if (!parsed.concepts || !Array.isArray(parsed.concepts)) {
+            throw new Error('Invalid concepts format in response');
+        }
+        
+        const concepts = parsed.concepts.map((c, i) => ({
+            id: 'concept-' + Date.now() + '-' + i,
+            name: c.name,
+            description: c.description
+        }));
+
+        displayExtractedConcepts(concepts);
     } catch (err) {
         console.error('Error:', err);
         errorDiv.textContent = 'Error: ' + err.message;
@@ -325,25 +341,6 @@ async function parseDocument() {
         parseBtn.disabled = false;
         loadingDiv.classList.add('d-none');
     }
-}
-
-function extractConceptsLocally(text) {
-    const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 10);
-    const concepts = [];
-    
-    for (let i = 0; i < Math.min(5, sentences.length); i++) {
-        const sentence = sentences[i].trim();
-        const words = sentence.split(' ').filter(w => w.length > 3);
-        const name = words.slice(0, 3).join(' ');
-        
-        concepts.push({
-            id: 'concept-' + Date.now() + '-' + i,
-            name: name || `Concept ${i + 1}`,
-            description: sentence
-        });
-    }
-    
-    return concepts;
 }
 
 function displayExtractedConcepts(concepts) {
@@ -356,7 +353,7 @@ function displayExtractedConcepts(concepts) {
         const conceptCard = document.createElement('div');
         conceptCard.className = 'concept-item p-3 border rounded';
         conceptCard.innerHTML = `
-            <div class="d-flex align-items-start gap-3">
+            <div class="d-flex align-items-start gap-2">
                 <input type="checkbox" class="form-check-input mt-1" checked data-concept-id="${concept.id}">
                 <div class="flex-grow-1">
                     <h6 class="fw-bold mb-1">${concept.name}</h6>
@@ -390,9 +387,9 @@ function saveConcepts() {
         }
     });
 
-    let concepts = getConcepts();
+    let concepts = loadData('concepts', []);
     concepts = concepts.concat(selectedConcepts);
-    setConcepts(concepts);
+    saveData('concepts', concepts);
 
     alert(`Saved ${selectedConcepts.length} concepts to your knowledge base!`);
     clearUpload();
@@ -407,15 +404,13 @@ function clearUpload() {
     extractedConceptsData = [];
 }
 
-// =============================================================================
-// KNOWLEDGE GRAPH FUNCTIONS
-// =============================================================================
-
+// Knowledge Graph
 let graphNodes = [];
 let selectedNodeId = null;
 
 function initializeGraph() {
-    const concepts = getConcepts();
+    const concepts = loadData('concepts', []);
+    
     if (concepts.length === 0) {
         document.getElementById('graphEmpty').classList.remove('d-none');
         document.getElementById('graphCanvas').classList.add('d-none');
@@ -526,7 +521,6 @@ function showNodeDetails(node) {
     document.getElementById('nodeReviews').textContent = node.reviews;
     const nextReview = node.nextReview ? new Date(node.nextReview).toLocaleDateString() : 'Not scheduled';
     document.getElementById('nodeNextReview').textContent = nextReview;
-
     document.getElementById('nodeDetails').classList.remove('d-none');
 }
 
@@ -536,17 +530,15 @@ function resetGraph() {
     initializeGraph();
 }
 
-// =============================================================================
-// PRACTICE (FLASHCARDS) FUNCTIONS
-// =============================================================================
-
+// Practice Mode
 let currentCard = null;
 let dueCards = [];
 let isFlipped = false;
 
 function initializePractice() {
-    const concepts = getConcepts();
+    const concepts = loadData('concepts', []);
     dueCards = concepts.filter(c => !c.nextReview || new Date(c.nextReview) <= new Date());
+    
     document.getElementById('cardsRemaining').textContent = dueCards.length + ' card' + (dueCards.length !== 1 ? 's' : '') + ' due';
 
     if (dueCards.length === 0) {
@@ -598,18 +590,20 @@ function rateCard(performance) {
     
     const updatedCard = calculateNextReview(currentCard, performance);
 
-    let concepts = getConcepts();
+    let concepts = loadData('concepts', []);
     const index = concepts.findIndex(c => c.id === currentCard.id);
     if (index !== -1) {
         concepts[index] = updatedCard;
-        setConcepts(concepts);
+        saveData('concepts', concepts);
     }
 
-    addSession({
+    let sessions = loadData('sessions', []);
+    sessions.push({
         conceptId: currentCard.id,
         performance: performance,
         timestamp: new Date().toISOString()
     });
+    saveData('sessions', sessions);
 
     dueCards.shift();
     document.getElementById('cardsRemaining').textContent = dueCards.length + ' card' + (dueCards.length !== 1 ? 's' : '') + ' due';
@@ -652,165 +646,192 @@ function calculateNextReview(concept, performance) {
     };
 }
 
-// =============================================================================
-// QUIZ FUNCTIONS
-// =============================================================================
-
+// Quiz Generator
 let quizQuestions = [];
 let currentQuestionIndex = 0;
-let quizScore = 0;
 let selectedAnswer = null;
+let quizStats = { correct: 0, total: 0 };
 
-function initializeQuiz() {
-    const concepts = getConcepts();
+function generateQuiz() {
+    const concepts = loadData('concepts', []);
     
     if (concepts.length === 0) {
-        document.getElementById('quizEmpty').classList.remove('d-none');
-        document.getElementById('quizStart').classList.add('d-none');
-        document.getElementById('quizActive').classList.add('d-none');
-        document.getElementById('quizResults').classList.add('d-none');
-    } else {
-        document.getElementById('quizEmpty').classList.add('d-none');
-        document.getElementById('quizStart').classList.remove('d-none');
-        document.getElementById('quizActive').classList.add('d-none');
-        document.getElementById('quizResults').classList.add('d-none');
-    }
-}
-
-function startQuiz() {
-    const concepts = getConcepts();
-    quizScore = 0;
-    currentQuestionIndex = 0;
-    selectedAnswer = null;
-    
-    // Generate 5 random questions
-    const shuffled = concepts.sort(() => 0.5 - Math.random());
-    quizQuestions = shuffled.slice(0, Math.min(5, concepts.length)).map(concept => {
-        const wrongAnswers = concepts
-            .filter(c => c.id !== concept.id)
-            .sort(() => 0.5 - Math.random())
-            .slice(0, 3)
-            .map(c => c.description);
-        
-        const allAnswers = [concept.description, ...wrongAnswers]
-            .sort(() => 0.5 - Math.random());
-        
-        return {
-            question: concept.name,
-            correctAnswer: concept.description,
-            options: allAnswers
-        };
-    });
-    
-    document.getElementById('quizStart').classList.add('d-none');
-    document.getElementById('quizActive').classList.remove('d-none');
-    document.getElementById('quizResults').classList.add('d-none');
-    document.getElementById('quizScore').classList.remove('d-none');
-    
-    loadQuestion();
-}
-
-function loadQuestion() {
-    if (currentQuestionIndex >= quizQuestions.length) {
-        showResults();
+        alert('Please add some concepts first before generating a quiz!');
         return;
     }
-    
+
+    const quizLength = parseInt(document.getElementById('quizLength').value);
+    const quizType = document.getElementById('quizType').value;
+
+    if (concepts.length < quizLength) {
+        alert(`You only have ${concepts.length} concepts. Please add more or choose fewer questions.`);
+        return;
+    }
+
+    // Shuffle and select concepts
+    const shuffled = [...concepts].sort(() => Math.random() - 0.5);
+    const selectedConcepts = shuffled.slice(0, quizLength);
+
+    quizQuestions = selectedConcepts.map(concept => {
+        let type;
+        if (quizType === 'mixed') {
+            type = Math.random() > 0.5 ? 'multiple' : 'truefalse';
+        } else if (quizType === 'multiple') {
+            type = 'multiple';
+        } else {
+            type = 'truefalse';
+        }
+
+        if (type === 'multiple') {
+            // Generate wrong answers from other concepts
+            const wrongAnswers = shuffled
+                .filter(c => c.id !== concept.id)
+                .sort(() => Math.random() - 0.5)
+                .slice(0, 3)
+                .map(c => c.description);
+
+            const allAnswers = [concept.description, ...wrongAnswers].sort(() => Math.random() - 0.5);
+
+            return {
+                type: 'multiple',
+                question: `What is "${concept.name}"?`,
+                options: allAnswers,
+                correct: concept.description,
+                conceptId: concept.id
+            };
+        } else {
+            // True/False question
+            const isTrue = Math.random() > 0.5;
+            let statement;
+            
+            if (isTrue) {
+                statement = concept.description;
+            } else {
+                // Use description from another concept
+                const wrongConcept = shuffled.find(c => c.id !== concept.id);
+                statement = wrongConcept ? wrongConcept.description : concept.description;
+            }
+
+            return {
+                type: 'truefalse',
+                question: `"${concept.name}" is defined as: ${statement}`,
+                options: ['True', 'False'],
+                correct: isTrue ? 'True' : 'False',
+                conceptId: concept.id
+            };
+        }
+    });
+
+    currentQuestionIndex = 0;
+    quizStats = { correct: 0, total: quizLength };
+    selectedAnswer = null;
+
+    document.getElementById('quizSetup').classList.add('d-none');
+    document.getElementById('quizActive').classList.remove('d-none');
+    document.getElementById('totalQuestions').textContent = quizLength;
+
+    loadQuizQuestion();
+}
+
+function loadQuizQuestion() {
+    if (currentQuestionIndex >= quizQuestions.length) {
+        showQuizResults();
+        return;
+    }
+
     const question = quizQuestions[currentQuestionIndex];
     selectedAnswer = null;
-    
+
     document.getElementById('currentQuestion').textContent = currentQuestionIndex + 1;
-    document.getElementById('totalQuestions').textContent = quizQuestions.length;
-    document.getElementById('quizQuestion').textContent = question.question;
-    document.getElementById('quizHint').textContent = 'Select the correct definition:';
-    document.getElementById('quizScoreText').textContent = `${quizScore}/${quizQuestions.length}`;
-    
-    const progress = ((currentQuestionIndex) / quizQuestions.length) * 100;
-    document.getElementById('quizProgress').style.width = progress + '%';
-    
+    document.getElementById('questionText').textContent = question.question;
+    document.getElementById('quizScore').textContent = quizStats.correct;
+    document.getElementById('quizTotal').textContent = quizStats.total;
+
     const optionsContainer = document.getElementById('quizOptions');
     optionsContainer.innerHTML = '';
-    
+
     question.options.forEach((option, index) => {
-        const optionDiv = document.createElement('div');
-        optionDiv.className = 'quiz-option';
-        optionDiv.innerHTML = `<strong>${String.fromCharCode(65 + index)}.</strong> ${option}`;
-        optionDiv.onclick = () => selectAnswer(option, optionDiv);
-        optionsContainer.appendChild(optionDiv);
+        const optionBtn = document.createElement('button');
+        optionBtn.className = 'btn btn-outline-primary text-start';
+        optionBtn.textContent = option;
+        optionBtn.onclick = () => selectAnswer(option, optionBtn);
+        optionsContainer.appendChild(optionBtn);
     });
-    
+
     document.getElementById('quizFeedback').classList.add('d-none');
-    document.getElementById('quizNextBtn').classList.add('d-none');
+    document.getElementById('submitAnswer').classList.remove('d-none');
+    document.getElementById('nextQuestion').classList.add('d-none');
 }
 
-function selectAnswer(answer, element) {
-    if (selectedAnswer !== null) return; // Already answered
+function selectAnswer(answer, buttonElement) {
+    // Remove previous selection
+    document.querySelectorAll('#quizOptions .btn').forEach(btn => {
+        btn.classList.remove('active');
+        btn.classList.remove('btn-primary');
+        btn.classList.add('btn-outline-primary');
+    });
+
+    // Mark new selection
+    buttonElement.classList.add('active');
+    buttonElement.classList.remove('btn-outline-primary');
+    buttonElement.classList.add('btn-primary');
     
     selectedAnswer = answer;
-    const question = quizQuestions[currentQuestionIndex];
-    const isCorrect = answer === question.correctAnswer;
-    
-    if (isCorrect) {
-        quizScore++;
-        element.classList.add('correct');
-        showFeedback('Correct! Well done! 🎉', 'success');
-    } else {
-        element.classList.add('incorrect');
-        showFeedback(`Incorrect. The correct answer was: "${question.correctAnswer}"`, 'danger');
-        
-        // Highlight correct answer
-        const options = document.querySelectorAll('.quiz-option');
-        options.forEach(opt => {
-            if (opt.textContent.includes(question.correctAnswer)) {
-                opt.classList.add('correct');
-            }
-        });
-    }
-    
-    document.getElementById('quizScoreText').textContent = `${quizScore}/${quizQuestions.length}`;
-    document.getElementById('quizNextBtn').classList.remove('d-none');
 }
 
-function showFeedback(message, type) {
-    const feedback = document.getElementById('quizFeedback');
-    feedback.className = `alert alert-${type}`;
-    feedback.textContent = message;
-    feedback.classList.remove('d-none');
+function submitAnswer() {
+    if (!selectedAnswer) {
+        alert('Please select an answer first!');
+        return;
+    }
+
+    const question = quizQuestions[currentQuestionIndex];
+    const isCorrect = selectedAnswer === question.correct;
+    const feedbackDiv = document.getElementById('quizFeedback');
+
+    if (isCorrect) {
+        quizStats.correct++;
+        feedbackDiv.className = 'alert alert-success';
+        feedbackDiv.textContent = '✓ Correct! Well done!';
+    } else {
+        feedbackDiv.className = 'alert alert-danger';
+        feedbackDiv.textContent = `✗ Incorrect. The correct answer is: ${question.correct}`;
+    }
+
+    feedbackDiv.classList.remove('d-none');
+    document.getElementById('submitAnswer').classList.add('d-none');
+    document.getElementById('nextQuestion').classList.remove('d-none');
+    document.getElementById('quizScore').textContent = quizStats.correct;
+
+    // Disable all option buttons
+    document.querySelectorAll('#quizOptions .btn').forEach(btn => btn.disabled = true);
 }
 
 function nextQuestion() {
     currentQuestionIndex++;
-    loadQuestion();
+    
+    // Re-enable buttons
+    document.querySelectorAll('#quizOptions .btn').forEach(btn => btn.disabled = false);
+    
+    loadQuizQuestion();
 }
 
-function showResults() {
+function showQuizResults() {
+    const percentage = Math.round((quizStats.correct / quizStats.total) * 100);
+    
     document.getElementById('quizActive').classList.add('d-none');
     document.getElementById('quizResults').classList.remove('d-none');
-    document.getElementById('quizScore').classList.add('d-none');
     
-    const percentage = Math.round((quizScore / quizQuestions.length) * 100);
-    
-    document.getElementById('finalScore').textContent = quizScore;
-    document.getElementById('finalTotal').textContent = quizQuestions.length;
-    document.getElementById('finalProgress').style.width = percentage + '%';
-    
-    let emoji = '🎉';
-    let message = 'Great work!';
-    
-    if (percentage === 100) {
-        emoji = '🏆';
-        message = 'Perfect score! You\'re a master!';
-    } else if (percentage >= 80) {
-        emoji = '🌟';
-        message = 'Excellent performance!';
-    } else if (percentage >= 60) {
-        emoji = '👍';
-        message = 'Good job! Keep practicing!';
-    } else {
-        emoji = '📚';
-        message = 'Keep studying and try again!';
-    }
-    
-    document.getElementById('resultsEmoji').textContent = emoji;
-    document.getElementById('resultsMessage').textContent = message;
+    document.getElementById('finalScore').textContent = percentage + '%';
+    document.getElementById('correctAnswers').textContent = quizStats.correct;
+    document.getElementById('wrongAnswers').textContent = quizStats.total - quizStats.correct;
+}
+
+function resetQuiz() {
+    document.getElementById('quizResults').classList.add('d-none');
+    document.getElementById('quizSetup').classList.remove('d-none');
+    quizQuestions = [];
+    currentQuestionIndex = 0;
+    selectedAnswer = null;
+    quizStats = { correct: 0, total: 0 };
 }
