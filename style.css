@@ -21,25 +21,30 @@ header {
     border-bottom: 1px solid #e5e7eb;
 }
 
+.nav-tabs {
+    border-bottom: none !important;
+}
+
 .nav-tabs .nav-link {
-    border: none;
-    border-bottom: 2px solid transparent;
+    border: none !important;
+    border-bottom: 2px solid transparent !important;
     color: #6b7280;
     font-weight: 500;
     padding: 1rem 1.5rem;
-    background: none;
+    background: none !important;
     cursor: pointer;
     transition: all 0.3s;
 }
 
 .nav-tabs .nav-link:hover {
     color: #1f2937;
-    border-bottom-color: #e5e7eb;
+    border-bottom-color: #e5e7eb !important;
 }
 
 .nav-tabs .nav-link.active {
-    color: #3b82f6;
-    border-bottom-color: #3b82f6;
+    color: #3b82f6 !important;
+    border-bottom-color: #3b82f6 !important;
+    background: none !important;
 }
 
 .tab-content {
@@ -50,8 +55,107 @@ header {
     display: block;
 }
 
+footer {
+    background: white;
+    border-top: 1px solid #e5e7eb;
+    margin-top: 3rem;
+}
+
 .welcome-card {
     background: white;
     border-radius: 12px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+.bg-blue {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.bg-purple {
+    background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
+}
+
+.bg-green {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.metric-box {
+    border-radius: 8px;
+    transition: transform 0.2s;
+}
+
+.metric-box:hover {
+    transform: scale(1.05);
+}
+
+.bg-blue-light {
+    background: #eff6ff;
+}
+
+.bg-green-light {
+    background: #f0fdf4;
+}
+
+.bg-orange-light {
+    background: #fff7ed;
+}
+
+.text-blue {
+    color: #3b82f6;
+}
+
+.text-green {
+    color: #10b981;
+}
+
+.text-orange {
+    color: #f97316;
+}
+
+.feature-box {
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.3s;
+}
+
+.feature-box:hover {
+    background: rgba(255, 255, 255, 0.8);
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.feature-icon {
+    font-size: 48px;
+}
+
+.progress {
+    background-color: #e5e7eb;
+    border-radius: 10px;
+}
+
+.progress-bar {
+    border-radius: 10px;
 }
