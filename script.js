@@ -28,8 +28,8 @@ function setupEventListeners() {
             const tabId = this.getAttribute('data-tab');
             document.getElementById(tabId).classList.add('active');
 
-            if (tabId === 'graph') {
-                setTimeout(initializeGraph, 100);
+            if (tabId === 'chatbot') {
+                setTimeout(initializeChatbot, 100);
             } else if (tabId === 'practice') {
                 setTimeout(initializePractice, 100);
             } else if (tabId === 'quiz') {
@@ -42,6 +42,9 @@ function setupEventListeners() {
 // =============================================================================
 // AUTH FUNCTIONS
 // =============================================================================
+
+// Bootstrap modal instance
+let authModalInstance = null;
 
 function checkAuth() {
     const savedUser = localStorage.getItem('currentUser');
@@ -57,80 +60,52 @@ function checkAuth() {
     }
 }
 
-function showResults() {
-    document.getElementById('quizActive').classList.add('d-none');
-    document.getElementById('quizResults').classList.remove('d-none');
-    document.getElementById('quizScore').classList.add('d-none');
-    
-    const percentage = Math.round((quizScore / quizQuestions.length) * 100);
-    
-    document.getElementById('finalScore').textContent = quizScore;
-    document.getElementById('finalTotal').textContent = quizQuestions.length;
-    document.getElementById('finalProgress').style.width = percentage + '%';
-    
-    let emoji = '🎉';
-    let message = 'Great work!';
-    
-    if (percentage === 100) {
-        emoji = '🏆';
-        message = 'Perfect score! You\'re a master!';
-    } else if (percentage >= 80) {
-        emoji = '🌟';
-        message = 'Excellent performance!';
-    } else if (percentage >= 60) {
-        emoji = '👍';
-        message = 'Good job! Keep practicing!';
-    } else {
-        emoji = '📚';
-        message = 'Keep studying and try again!';
+function showAuthModal() {
+    if (!authModalInstance) {
+        authModalInstance = new bootstrap.Modal(document.getElementById('authModal'));
     }
-    
-    document.getElementById('resultsEmoji').textContent = emoji;
-    document.getElementById('resultsMessage').textContent = message;
-}AuthModal() {
-    document.getElementById('authModal').style.display = 'flex';
+    authModalInstance.show();
 }
 
 function hideAuthModal() {
-    document.getElementById('authModal').style.display = 'none';
+    if (authModalInstance) {
+        authModalInstance.hide();
+    }
 }
 
 function showUserInfo() {
-    document.getElementById('userInfo').classList.remove('d-none');
-    document.getElementById('userName').textContent = isGuest ? 'Guest' : currentUser.name;
+    document.getElementById('userDisplay').textContent = isGuest ? 'Guest' : currentUser.name;
 }
 
-function showSignUp() {
-    document.getElementById('signInForm').classList.add('d-none');
-    document.getElementById('signUpForm').classList.remove('d-none');
-    document.getElementById('authTitle').textContent = 'Create Account';
+function switchToSignup() {
+    document.getElementById('loginForm').classList.add('d-none');
+    document.getElementById('signupForm').classList.remove('d-none');
 }
 
-function showSignIn() {
-    document.getElementById('signUpForm').classList.add('d-none');
-    document.getElementById('signInForm').classList.remove('d-none');
-    document.getElementById('authTitle').textContent = 'Welcome to Cerebro';
+function switchToLogin() {
+    document.getElementById('signupForm').classList.add('d-none');
+    document.getElementById('loginForm').classList.remove('d-none');
 }
 
-function signUp() {
-    const name = document.getElementById('signUpName').value.trim();
-    const email = document.getElementById('signUpEmail').value.trim();
-    const password = document.getElementById('signUpPassword').value;
+function handleSignup() {
+    const name = document.getElementById('signupName').value.trim();
+    const email = document.getElementById('signupEmail').value.trim();
+    const password = document.getElementById('signupPassword').value;
 
     if (!name || !email || !password) {
-        showAuthError('Please fill in all fields');
+        showAuthError('Please fill in all fields', 'signup');
         return;
     }
 
     if (password.length < 6) {
-        showAuthError('Password must be at least 6 characters');
+        showAuthError('Password must be at least 6 characters', 'signup');
         return;
     }
 
     let users = JSON.parse(localStorage.getItem('users') || '[]');
     
     if (users.find(u => u.email === email)) {
-        showAuthError('Email already registered');
+        showAuthError('Email already registered', 'signup');
         return;
     }
 
@@ -154,12 +129,12 @@ function signUp() {
     updateDashboard();
 }
 
-function signIn() {
-    const email = document.getElementById('signInEmail').value.trim();
-    const password = document.getElementById('signInPassword').value;
+function handleLogin() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
 
     if (!email || !password) {
-        showAuthError('Please fill in all fields');
+        showAuthError('Please fill in all fields', 'login');
         return;
     }
 
@@ -167,7 +142,7 @@ function signIn() {
     const user = users.find(u => u.email === email && u.password === password);
 
     if (!user) {
-        showAuthError('Invalid email or password');
+        showAuthError('Invalid email or password', 'login');
         return;
     }
 
@@ -191,7 +166,7 @@ function continueAsGuest() {
     updateDashboard();
 }
 
-function signOut() {
+function handleLogout() {
     if (isGuest) {
         sessionData = { concepts: [], sessions: [], users: [] };
     }
@@ -200,14 +175,14 @@ function signOut() {
     isGuest = false;
     localStorage.removeItem('currentUser');
     
-    document.getElementById('userInfo').classList.add('d-none');
+    document.getElementById('userDisplay').textContent = 'Guest';
     showAuthModal();
-    showSignIn();
+    switchToLogin();
     updateDashboard();
 }
 
-function showAuthError(message) {
-    const errorDiv = document.getElementById('authError');
+function showAuthError(message, formType) {
+    const errorDiv = document.getElementById(formType + 'Error');
     errorDiv.textContent = message;
     errorDiv.classList.remove('d-none');
     setTimeout(() => errorDiv.classList.add('d-none'), 3000);
@@ -295,12 +270,12 @@ function updateDashboard() {
     const conceptsMastered = concepts.filter(c => c.mastery >= 80).length;
     document.getElementById('conceptsMastered').textContent = conceptsMastered;
     
-    const practiceAccuracy = studySessions.length > 0
-        ? Math.round((sessions.filter(s => s.performance >= 4).length / studySessions.length) * 100)
+    const practiceAccuracy = sessions.length > 0
+        ? Math.round((sessions.filter(s => s.performance >= 4).length / sessions.length) * 100)
         : 0;
     document.getElementById('practiceAccuracy').textContent = practiceAccuracy + '%';
     
-    const weeklyGoal = studySessions.length % 50;
+    const weeklyGoal = Math.min(studySessions, 50);
     document.getElementById('weeklyGoal').textContent = weeklyGoal + '/50';
 
     const masteryPercent = totalConcepts > 0 ? (conceptsMastered / totalConcepts) * 100 : 0;
@@ -473,108 +448,186 @@ function clearUpload() {
 }
 
 // =============================================================================
-// KNOWLEDGE LIBRARY FUNCTIONS (Replaced Graph)
+// AI STUDY BUDDY CHATBOT FUNCTIONS
 // =============================================================================
 
-let currentFilter = 'all';
+let chatHistory = [];
 
-function initializeGraph() {
+function initializeChatbot() {
     const concepts = getConcepts();
     if (concepts.length === 0) {
-        document.getElementById('graphEmpty').classList.remove('d-none');
-        document.getElementById('conceptsGrid').classList.add('d-none');
-        return;
+        document.getElementById('chatbotEmpty').classList.remove('d-none');
+        document.getElementById('chatbotActive').classList.add('d-none');
+    } else {
+        document.getElementById('chatbotEmpty').classList.add('d-none');
+        document.getElementById('chatbotActive').classList.remove('d-none');
+        
+        // Show welcome message if chat is empty
+        if (chatHistory.length === 0) {
+            addChatMessage('bot', `Hi! I'm your AI Study Buddy! 🤖 I can help you with:\n\n• Explaining your learned concepts\n• Answering questions about your study material\n• Providing study tips and techniques\n• Quiz you on specific topics\n\nWhat would you like to know?`);
+        }
     }
-
-    document.getElementById('graphEmpty').classList.add('d-none');
-    document.getElementById('conceptsGrid').classList.remove('d-none');
-    
-    renderConceptCards();
 }
 
-function applyFilter() {
-    currentFilter = document.getElementById('sortFilter').value;
-    renderConceptCards();
-}
-
-function renderConceptCards() {
-    const concepts = getConcepts();
-    let filteredConcepts = concepts;
+function addChatMessage(sender, message) {
+    const chatMessages = document.getElementById('chatMessages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `chat-message ${sender}-message`;
     
-    // Apply filter
-    if (currentFilter === 'low') {
-        filteredConcepts = concepts.filter(c => c.mastery < 50);
-    } else if (currentFilter === 'medium') {
-        filteredConcepts = concepts.filter(c => c.mastery >= 50 && c.mastery < 80);
-    } else if (currentFilter === 'high') {
-        filteredConcepts = concepts.filter(c => c.mastery >= 80);
-    }
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     
-    const container = document.getElementById('conceptCards');
-    container.innerHTML = '';
-    
-    filteredConcepts.forEach(concept => {
-        const masteryClass = concept.mastery >= 80 ? 'success' : concept.mastery >= 50 ? 'warning' : 'danger';
-        const masteryIcon = concept.mastery >= 80 ? '🌟' : concept.mastery >= 50 ? '📚' : '📖';
-        
-        const nextReview = concept.nextReview 
-            ? new Date(concept.nextReview).toLocaleDateString()
-            : 'Not scheduled';
-        
-        const isDue = !concept.nextReview || new Date(concept.nextReview) <= new Date();
-        
-        const card = document.createElement('div');
-        card.className = 'col-md-6 col-lg-4';
-        card.innerHTML = `
-            <div class="concept-card">
-                <div class="concept-card-header">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <h6 class="fw-bold mb-0">${masteryIcon} ${concept.name}</h6>
-                        ${isDue ? '<span class="badge bg-danger">Due</span>' : ''}
-                    </div>
-                </div>
-                <div class="concept-card-body">
-                    <p class="text-muted small mb-3">${concept.description}</p>
-                    <div class="mb-2">
-                        <div class="d-flex justify-content-between small mb-1">
-                            <span class="text-muted">Mastery</span>
-                            <span class="fw-bold text-${masteryClass}">${concept.mastery}%</span>
-                        </div>
-                        <div class="progress" style="height: 6px;">
-                            <div class="progress-bar bg-${masteryClass}" style="width: ${concept.mastery}%"></div>
-                        </div>
-                    </div>
-                    <div class="d-flex justify-content-between small text-muted">
-                        <span>Reviews: ${concept.reviews}</span>
-                        <span>Next: ${nextReview}</span>
-                    </div>
-                </div>
-                <div class="concept-card-footer">
-                    <button class="btn btn-sm btn-outline-primary" onclick="practiceSpecificConcept('${concept.id}')">
-                        Practice Now
-                    </button>
+    if (sender === 'bot') {
+        messageDiv.innerHTML = `
+            <div class="d-flex gap-2 align-items-start">
+                <div class="chat-avatar">🤖</div>
+                <div class="flex-grow-1">
+                    <div class="chat-bubble">${message}</div>
+                    <div class="chat-time">${time}</div>
                 </div>
             </div>
         `;
-        container.appendChild(card);
-    });
-}
-
-function practiceSpecificConcept(conceptId) {
-    const concepts = getConcepts();
-    const concept = concepts.find(c => c.id === conceptId);
-    if (!concept) return;
+    } else {
+        messageDiv.innerHTML = `
+            <div class="d-flex gap-2 align-items-start justify-content-end">
+                <div class="flex-grow-1 text-end">
+                    <div class="chat-bubble user-bubble">${message}</div>
+                    <div class="chat-time">${time}</div>
+                </div>
+                <div class="chat-avatar user-avatar">👤</div>
+            </div>
+        `;
+    }
     
-    // Set up practice with just this concept
-    dueCards = [concept];
-    switchTab('practice');
+    chatMessages.appendChild(messageDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+    chatHistory.push({ sender, message, time });
 }
 
-function resetGraph() {
-    currentFilter = 'all';
-    document.getElementById('sortFilter').value = 'all';
-    initializeGraph();
+async function sendChatMessage() {
+    const input = document.getElementById('chatInput');
+    const message = input.value.trim();
+    
+    if (!message) return;
+    
+    // Add user message
+    addChatMessage('user', message);
+    input.value = '';
+    
+    // Show typing indicator
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'chat-message bot-message typing-indicator';
+    typingDiv.id = 'typingIndicator';
+    typingDiv.innerHTML = `
+        <div class="d-flex gap-2 align-items-start">
+            <div class="chat-avatar">🤖</div>
+            <div class="chat-bubble">
+                <div class="typing-dots">
+                    <span></span><span></span><span></span>
+                </div>
+            </div>
+        </div>
+    `;
+    document.getElementById('chatMessages').appendChild(typingDiv);
+    document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+    
+    // Get AI response
+    try {
+        const concepts = getConcepts();
+        const conceptContext = concepts.map(c => `${c.name}: ${c.description}`).join('\n');
+        
+        const response = await fetch('http://localhost:3000/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                message,
+                concepts: conceptContext
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Chat API failed');
+        }
+        
+        const data = await response.json();
+        let botResponse;
+        
+        if (data.choices && data.choices[0] && data.choices[0].message) {
+            botResponse = data.choices[0].message.content;
+        } else if (data.content && data.content[0]) {
+            botResponse = data.content[0].text;
+        } else {
+            throw new Error('Unexpected response format');
+        }
+        
+        // Remove typing indicator
+        document.getElementById('typingIndicator').remove();
+        
+        // Add bot response
+        addChatMessage('bot', botResponse);
+        
+    } catch (error) {
+        console.error('Chat error:', error);
+        
+        // Remove typing indicator
+        const typingIndicator = document.getElementById('typingIndicator');
+        if (typingIndicator) typingIndicator.remove();
+        
+        // Fallback response
+        const fallbackResponse = generateFallbackResponse(message);
+        addChatMessage('bot', fallbackResponse);
+    }
 }
+
+function generateFallbackResponse(message) {
+    const concepts = getConcepts();
+    const lowerMessage = message.toLowerCase();
+    
+    // Check if asking about a specific concept
+    for (let concept of concepts) {
+        if (lowerMessage.includes(concept.name.toLowerCase())) {
+            return `Based on your notes, ${concept.name} is: ${concept.description}\n\nWould you like me to quiz you on this concept or explain it further?`;
+        }
+    }
+    
+    // General responses
+    if (lowerMessage.includes('help') || lowerMessage.includes('what can you do')) {
+        return `I can help you with:\n\n• Explaining concepts from your study materials\n• Answering questions about topics you've learned\n• Providing study strategies\n• Creating practice questions\n\nYou currently have ${concepts.length} concept(s) in your knowledge base. Ask me about any of them!`;
+    }
+    
+    if (lowerMessage.includes('quiz') || lowerMessage.includes('test')) {
+        return `I'd love to quiz you! You can go to the Quiz Generator tab for a full quiz, or ask me specific questions about your concepts. What topic would you like to focus on?`;
+    }
+    
+    if (lowerMessage.includes('study tip') || lowerMessage.includes('how to study')) {
+        return `Here are some proven study techniques:\n\n1. **Spaced Repetition**: Review material at increasing intervals (which you're doing with the Practice tab!)\n2. **Active Recall**: Test yourself instead of just re-reading\n3. **Feynman Technique**: Explain concepts in simple terms\n4. **Pomodoro Method**: Study in 25-minute focused sessions\n5. **Interleaving**: Mix different topics instead of blocking\n\nWhich technique would you like to know more about?`;
+    }
+    
+    if (concepts.length === 0) {
+        return `You don't have any concepts in your knowledge base yet. Upload some study materials first, and then I can help you learn them!`;
+    }
+    
+    return `I understand you're asking about: "${message}"\n\nBased on your ${concepts.length} learned concept(s), I can help you understand them better. Try asking me:\n\n• "Explain [concept name]"\n• "What is [concept name]?"\n• "Give me study tips"\n• "Quiz me on [topic]"\n\nWhat would you like to know?`;
+}
+
+function clearChat() {
+    chatHistory = [];
+    document.getElementById('chatMessages').innerHTML = '';
+    initializeChatbot();
+}
+
+// Allow Enter key to send message
+document.addEventListener('DOMContentLoaded', function() {
+    const chatInput = document.getElementById('chatInput');
+    if (chatInput) {
+        chatInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendChatMessage();
+            }
+        });
+    }
+});
 
 // =============================================================================
 // PRACTICE (FLASHCARDS) FUNCTIONS
@@ -706,26 +759,35 @@ function initializeQuiz() {
     
     if (concepts.length === 0) {
         document.getElementById('quizEmpty').classList.remove('d-none');
-        document.getElementById('quizStart').classList.add('d-none');
+        document.getElementById('quizSetup').classList.add('d-none');
         document.getElementById('quizActive').classList.add('d-none');
         document.getElementById('quizResults').classList.add('d-none');
     } else {
         document.getElementById('quizEmpty').classList.add('d-none');
-        document.getElementById('quizStart').classList.remove('d-none');
+        document.getElementById('quizSetup').classList.remove('d-none');
         document.getElementById('quizActive').classList.add('d-none');
         document.getElementById('quizResults').classList.add('d-none');
     }
 }
 
-function startQuiz() {
+function generateQuiz() {
     const concepts = getConcepts();
+    const quizLength = parseInt(document.getElementById('quizLength').value);
+    
+    if (concepts.length === 0) {
+        alert('No concepts available. Please add some study materials first!');
+        return;
+    }
+    
     quizScore = 0;
     currentQuestionIndex = 0;
     selectedAnswer = null;
     
-    // Generate 5 random questions
-    const shuffled = concepts.sort(() => 0.5 - Math.random());
-    quizQuestions = shuffled.slice(0, Math.min(5, concepts.length)).map(concept => {
+    // Generate random questions
+    const shuffled = [...concepts].sort(() => 0.5 - Math.random());
+    const numQuestions = Math.min(quizLength, concepts.length);
+    
+    quizQuestions = shuffled.slice(0, numQuestions).map(concept => {
         const wrongPool = concepts.filter(c => c.id !== concept.id);
         const wrongAnswers = wrongPool.length >= 3 
             ? wrongPool.sort(() => 0.5 - Math.random()).slice(0, 3).map(c => c.description)
@@ -745,17 +807,16 @@ function startQuiz() {
         };
     });
     
-    document.getElementById('quizStart').classList.add('d-none');
+    document.getElementById('quizSetup').classList.add('d-none');
     document.getElementById('quizActive').classList.remove('d-none');
     document.getElementById('quizResults').classList.add('d-none');
-    document.getElementById('quizScore').classList.remove('d-none');
     
     loadQuestion();
 }
 
 function loadQuestion() {
     if (currentQuestionIndex >= quizQuestions.length) {
-        showResults();
+        showQuizResults();
         return;
     }
     
@@ -764,12 +825,9 @@ function loadQuestion() {
     
     document.getElementById('currentQuestion').textContent = currentQuestionIndex + 1;
     document.getElementById('totalQuestions').textContent = quizQuestions.length;
-    document.getElementById('quizQuestion').textContent = question.question;
-    document.getElementById('quizHint').textContent = 'Select the correct definition:';
-    document.getElementById('quizScoreText').textContent = `${quizScore}/${quizQuestions.length}`;
-    
-    const progress = ((currentQuestionIndex) / quizQuestions.length) * 100;
-    document.getElementById('quizProgress').style.width = progress + '%';
+    document.getElementById('questionText').textContent = question.question;
+    document.getElementById('quizScore').textContent = quizScore;
+    document.getElementById('quizTotal').textContent = quizQuestions.length;
     
     const optionsContainer = document.getElementById('quizOptions');
     optionsContainer.innerHTML = '';
@@ -783,35 +841,57 @@ function loadQuestion() {
     });
     
     document.getElementById('quizFeedback').classList.add('d-none');
-    document.getElementById('quizNextBtn').classList.add('d-none');
+    document.getElementById('submitAnswer').classList.remove('d-none');
+    document.getElementById('nextQuestion').classList.add('d-none');
 }
 
 function selectAnswer(answer, element) {
-    if (selectedAnswer !== null) return; // Already answered
+    if (selectedAnswer !== null) return;
+    
+    // Remove previous selection
+    document.querySelectorAll('.quiz-option').forEach(opt => {
+        opt.style.borderColor = '#e5e7eb';
+        opt.style.background = '';
+    });
+    
+    // Highlight selected
+    element.style.borderColor = '#3b82f6';
+    element.style.background = '#eff6ff';
     
     selectedAnswer = answer;
+}
+
+function submitAnswer() {
+    if (selectedAnswer === null) {
+        alert('Please select an answer first!');
+        return;
+    }
+    
     const question = quizQuestions[currentQuestionIndex];
-    const isCorrect = answer === question.correctAnswer;
+    const isCorrect = selectedAnswer === question.correctAnswer;
     
     if (isCorrect) {
         quizScore++;
-        element.classList.add('correct');
         showFeedback('Correct! Well done! 🎉', 'success');
     } else {
-        element.classList.add('incorrect');
         showFeedback(`Incorrect. The correct answer was: "${question.correctAnswer}"`, 'danger');
-        
-        // Highlight correct answer
-        const options = document.querySelectorAll('.quiz-option');
-        options.forEach(opt => {
-            if (opt.textContent.includes(question.correctAnswer)) {
-                opt.classList.add('correct');
-            }
-        });
     }
     
-    document.getElementById('quizScoreText').textContent = `${quizScore}/${quizQuestions.length}`;
-    document.getElementById('quizNextBtn').classList.remove('d-none');
+    // Highlight correct/incorrect answers
+    const options = document.querySelectorAll('.quiz-option');
+    options.forEach(opt => {
+        const optionText = opt.textContent.substring(3); // Remove "A. " prefix
+        if (optionText === question.correctAnswer) {
+            opt.classList.add('correct');
+        } else if (optionText === selectedAnswer && !isCorrect) {
+            opt.classList.add('incorrect');
+        }
+        opt.onclick = null; // Disable clicking
+    });
+    
+    document.getElementById('quizScore').textContent = quizScore;
+    document.getElementById('submitAnswer').classList.add('d-none');
+    document.getElementById('nextQuestion').classList.remove('d-none');
 }
 
 function showFeedback(message, type) {
@@ -826,16 +906,15 @@ function nextQuestion() {
     loadQuestion();
 }
 
-function showResults() {
+function showQuizResults() {
     document.getElementById('quizActive').classList.add('d-none');
     document.getElementById('quizResults').classList.remove('d-none');
-    document.getElementById('quizScore').classList.add('d-none');
     
     const percentage = Math.round((quizScore / quizQuestions.length) * 100);
     
-    document.getElementById('finalScore').textContent = quizScore;
-    document.getElementById('finalTotal').textContent = quizQuestions.length;
-    document.getElementById('finalProgress').style.width = percentage + '%';
+    document.getElementById('finalScore').textContent = percentage + '%';
+    document.getElementById('correctAnswers').textContent = quizScore;
+    document.getElementById('wrongAnswers').textContent = quizQuestions.length - quizScore;
     
     let emoji = '🎉';
     let message = 'Great work!';
@@ -854,6 +933,13 @@ function showResults() {
         message = 'Keep studying and try again!';
     }
     
-    document.getElementById('resultsEmoji').textContent = emoji;
-    document.getElementById('resultsMessage').textContent = message;
+    // Add emoji and message if elements exist
+    const emojiEl = document.getElementById('resultsEmoji');
+    const messageEl = document.getElementById('resultsMessage');
+    if (emojiEl) emojiEl.textContent = emoji;
+    if (messageEl) messageEl.textContent = message;
+}
+
+function resetQuiz() {
+    initializeQuiz();
 }

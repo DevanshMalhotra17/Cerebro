@@ -60,7 +60,7 @@
         <div class="container">
             <div class="d-flex align-items-center justify-content-between">
                 <div class="d-flex align-items-center gap-3">
-                    <img src="assets/logo.png" alt="Cerebro Logo" class="logo">
+                    <div class="logo">🧠</div>
                     <div>
                         <h1 class="h4 mb-0 fw-bold text-dark">Cerebro</h1>
                         <p class="text-muted small mb-0">AI Learning Intelligence Platform</p>
@@ -69,7 +69,7 @@
                 <div class="d-flex align-items-center gap-2">
                     <span class="text-muted small" id="userDisplay">Guest</span>
                     <button class="btn btn-sm btn-outline-danger" onclick="handleLogout()">
-                        <span id="logoutText">Clear Data</span>
+                        <span id="logoutText">Logout</span>
                     </button>
                 </div>
             </div>
@@ -86,13 +86,13 @@
                     <button class="nav-link" data-tab="upload">📤 Upload</button>
                 </li>
                 <li class="nav-item">
-                    <button class="nav-link" data-tab="graph">📚 Knowledge Library</button>
+                    <button class="nav-link" data-tab="chatbot">🤖 Study Buddy</button>
                 </li>
                 <li class="nav-item">
                     <button class="nav-link" data-tab="practice">🎯 Practice</button>
                 </li>
                 <li class="nav-item">
-                    <button class="nav-link" data-tab="quiz">📝 Quiz Generator</button>
+                    <button class="nav-link" data-tab="quiz">📝 Quiz</button>
                 </li>
             </ul>
         </div>
@@ -129,7 +129,7 @@
                             <div class="stat-icon bg-green">🏆</div>
                             <div>
                                 <p class="text-muted small mb-1">Learning Streak</p>
-                                <h3 class="h3 fw-bold mb-0" id="learningStreak">0</h3>
+                                <h3 class="h3 fw-bold mb-0" id="learningStreak">0 days</h3>
                             </div>
                         </div>
                     </div>
@@ -215,9 +215,9 @@
                         </div>
                         <div class="col-md-4">
                             <div class="feature-box p-4">
-                                <div class="feature-icon mb-3">📚</div>
-                                <h5 class="fw-bold mb-2">2. Browse Library</h5>
-                                <p class="text-muted small">View and manage all your concepts in an organized library</p>
+                                <div class="feature-icon mb-3">🤖</div>
+                                <h5 class="fw-bold mb-2">2. Chat with AI</h5>
+                                <p class="text-muted small">Ask your AI Study Buddy questions about your concepts</p>
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -298,62 +298,44 @@
             </div>
         </div>
 
-        <div id="graph" class="tab-content">
+        <div id="chatbot" class="tab-content">
             <div class="welcome-card p-4">
                 <div class="d-flex align-items-center justify-content-between mb-4">
                     <div class="d-flex align-items-center gap-2">
-                        <span style="font-size: 24px;">🧠</span>
-                        <h3 class="h5 fw-bold text-dark mb-0">Knowledge Graph</h3>
+                        <span style="font-size: 24px;">🤖</span>
+                        <h3 class="h5 fw-bold text-dark mb-0">AI Study Buddy</h3>
                     </div>
-                    <button class="btn btn-sm btn-outline-primary" onclick="resetGraph()">
-                        Reset View
+                    <button class="btn btn-sm btn-outline-secondary" onclick="clearChat()">
+                        Clear Chat
                     </button>
                 </div>
 
-                <div id="graphEmpty" class="text-center py-5">
-                    <p class="text-muted">No concepts yet. Upload some study materials to build your knowledge graph!</p>
-                    <button class="btn btn-primary" onclick="switchTab('upload')">
+                <div id="chatbotEmpty" class="text-center py-5">
+                    <div style="font-size: 64px; margin-bottom: 1rem;">🤖</div>
+                    <h3 class="h4 fw-bold text-dark mb-2">Meet Your AI Study Buddy!</h3>
+                    <p class="text-muted">Upload some study materials first, and then I can help you learn them!</p>
+                    <button class="btn btn-primary mt-3" onclick="switchTab('upload')">
                         Upload Content
                     </button>
                 </div>
 
-                <div id="graphCanvas" class="d-none">
-                    <canvas id="knowledgeGraph" width="800" height="600" style="border: 1px solid #e5e7eb; border-radius: 8px; cursor: pointer;"></canvas>
-                    
-                    <div id="nodeDetails" class="mt-3 p-3 bg-light rounded d-none">
-                        <h6 class="fw-bold mb-2" id="nodeTitle">Concept Name</h6>
-                        <div class="row g-2 small">
-                            <div class="col-6">
-                                <span class="text-muted">Mastery:</span>
-                                <span class="fw-bold ms-1" id="nodeMastery">0%</span>
-                            </div>
-                            <div class="col-6">
-                                <span class="text-muted">Reviews:</span>
-                                <span class="fw-bold ms-1" id="nodeReviews">0</span>
-                            </div>
-                            <div class="col-12">
-                                <span class="text-muted">Next Review:</span>
-                                <span class="fw-bold ms-1" id="nodeNextReview">Not scheduled</span>
-                            </div>
+                <div id="chatbotActive" class="d-none">
+                    <div class="chat-container" id="chatMessages"></div>
+                    <div class="chat-input-container mt-3">
+                        <div class="input-group">
+                            <input 
+                                type="text" 
+                                class="form-control" 
+                                id="chatInput" 
+                                placeholder="Ask me anything about your concepts..."
+                                aria-label="Chat message">
+                            <button class="btn btn-primary" type="button" onclick="sendChatMessage()">
+                                Send 📤
+                            </button>
                         </div>
-                    </div>
-
-                    <div class="mt-3 p-3 bg-light rounded">
-                        <h6 class="fw-bold mb-2">Legend</h6>
-                        <div class="d-flex gap-3 flex-wrap small">
-                            <div class="d-flex align-items-center gap-1">
-                                <div style="width: 12px; height: 12px; background: #10b981; border-radius: 50%;"></div>
-                                <span>High Mastery (80%+)</span>
-                            </div>
-                            <div class="d-flex align-items-center gap-1">
-                                <div style="width: 12px; height: 12px; background: #f59e0b; border-radius: 50%;"></div>
-                                <span>Medium Mastery (50-80%)</span>
-                            </div>
-                            <div class="d-flex align-items-center gap-1">
-                                <div style="width: 12px; height: 12px; background: #ef4444; border-radius: 50%;"></div>
-                                <span>Low Mastery (&lt;50%)</span>
-                            </div>
-                        </div>
+                        <p class="text-muted small mt-2 mb-0">
+                            💡 Try: "Explain [concept]", "Quiz me on [topic]", "Give me study tips"
+                        </p>
                     </div>
                 </div>
             </div>
@@ -458,6 +440,15 @@
                     <h3 class="h5 fw-bold text-dark mb-0">AI Quiz Generator</h3>
                 </div>
 
+                <div id="quizEmpty" class="text-center py-5 d-none">
+                    <div style="font-size: 64px; margin-bottom: 1rem;">📝</div>
+                    <h3 class="h4 fw-bold text-dark mb-2">No Concepts Yet!</h3>
+                    <p class="text-muted">Upload some study materials first to generate quizzes.</p>
+                    <button class="btn btn-primary mt-3" onclick="switchTab('upload')">
+                        Upload Content
+                    </button>
+                </div>
+
                 <div id="quizSetup">
                     <p class="text-muted mb-3">Generate a custom quiz from your learned concepts</p>
                     
@@ -511,8 +502,8 @@
                 </div>
 
                 <div id="quizResults" class="d-none text-center">
-                    <div style="font-size: 64px; margin-bottom: 1rem;">🎉</div>
-                    <h3 class="h3 fw-bold mb-3">Quiz Complete!</h3>
+                    <div style="font-size: 64px; margin-bottom: 1rem;" id="resultsEmoji">🎉</div>
+                    <h3 class="h3 fw-bold mb-3" id="resultsMessage">Quiz Complete!</h3>
                     <div class="row g-3 mb-4">
                         <div class="col-4">
                             <div class="metric-box p-3 bg-blue-light">
