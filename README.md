@@ -14,47 +14,60 @@
 ## 🌟 Features
 
 ### 🤖 **AI Study Buddy**
-Your personal AI tutor that understands your learning materials and helps you master concepts through:
-- Context-aware explanations
-- Interactive Q&A sessions
-- Personalized study recommendations
-- On-demand concept clarification
+Your personal AI tutor for any study-related question:
+- Context-aware explanations based on your education level  
+- Study-only focus to avoid distractions  
+- Interactive Q&A with your saved concepts  
+- Smart suggestions for techniques and strategies  
 
 ### 📤 **Smart Document Parser**
-Upload any study material and let AI do the heavy lifting:
-- Automatic concept extraction from notes, textbooks, and lectures
-- Intelligent summarization
-- Structured knowledge organization
-- Local fallback for offline functionality
+Upload study materials and let AI handle the heavy lifting:
+- Automatic concept extraction from notes and textbooks  
+- AI-generated flashcards per concept  
+- Summaries and structured topic breakdowns  
+- Works offline with local fallback  
 
 ### 🎯 **Spaced Repetition Flashcards**
-Science-backed learning with SM-2 algorithm:
-- Optimized review scheduling
-- Adaptive difficulty adjustment
-- Long-term retention optimization
-- Progress tracking per concept
+Boost retention with science-backed learning:
+- AI-generated flashcards with spaced-repetition scheduling  
+- Adaptive difficulty (Again, Hard, Good, Easy)  
+- Intelligent interval management for long-term memory  
+- Progress tracking per card  
 
 ### 📝 **Dynamic Quiz Generator**
-Test your knowledge with AI-generated quizzes:
-- Customizable quiz length (5-20 questions)
-- Multiple choice format
-- Instant feedback
-- Performance analytics
+Quick knowledge checks powered by your concepts:
+- Custom quiz lengths (5–20 questions)  
+- Multiple-choice questions built from your flashcards  
+- Instant correctness feedback  
+- Score tracking and performance insights  
+
+### 📅 **Study Planner**
+Organize your academic life effortlessly:
+- Tasks with due dates and priorities  
+- Subject tagging for better organization  
+- Completion tracking and progress viewing  
+- Alerts for overdue items  
+
+### ⚙️ **Education Level Settings**
+AI adapts to how *you* learn:
+- Choose from Elementary to Professional levels  
+- Simplified or advanced explanations as needed  
+- Better alignment with your curriculum  
+- Improves accuracy of AI-generated content  
 
 ### 📊 **Comprehensive Dashboard**
-Track your learning journey with detailed analytics:
-- Total concepts learned
-- Study session streaks
-- Mastery percentages
-- Practice accuracy
-- Weekly goal progress
+Visualize your learning growth:
+- Mastery percentages and accuracy stats  
+- Study streak tracking  
+- Concepts learned and cards due  
+- Weekly goals overview  
 
-### 🔐 **Multi-User Authentication**
-Flexible learning modes:
-- Secure account registration
-- Persistent data storage
-- Guest mode for quick access
-- Privacy-focused data handling
+### 🔐 **Flexible Authentication**
+Learn how you prefer:
+- Sign in for persistent, long-term storage  
+- Guest mode for quick temporary sessions  
+- Separate data per user  
+- Fully local, privacy-focused storage  
 
 ---
 
@@ -83,8 +96,7 @@ Flexible learning modes:
    
    Create a `.env` file in the root directory:
    ```env
-   OPENROUTER_API_KEY=your_api_key_here
-   PORT=3000
+   API_KEY=your_gemini_api_key
    ```
 
 4. **Start the server**
@@ -125,55 +137,81 @@ Flexible learning modes:
 
 ### 1. Getting Started
 
-**Sign Up / Login**
-- Create an account for persistent data
-- Or continue as guest for temporary sessions
+**Sign Up / Login**  
+- Create an account for persistent data.  
+- Or continue as a guest for quick, temporary access.  
+- Your data is stored locally and stays separate for each user.  
 
 ### 2. Upload Study Materials
 
-**Document Parser**
-- Navigate to the "📤 Upload" tab
-- Paste your study materials (notes, textbooks, articles)
-- Click "Extract Concepts with AI"
-- Review and select concepts to save
+**Document Parser**  
+- Navigate to the **📤 Upload** tab.  
+- Paste your study materials (notes, textbooks, articles).  
+- Click **Extract Concepts with AI**.  
+- Review and save the concepts you want to learn.
 
 ### 3. Chat with AI Study Buddy
 
-**Interactive Learning**
-- Go to "🤖 Study Buddy" tab
-- Ask questions about your concepts
-- Request explanations, examples, or study tips
-- Engage in Socratic dialogue
+**Interactive Learning**  
+- Open the **🤖 Study Buddy** tab.  
+- Ask anything study-related — learning isn't limited to just your notes.  
+- Get explanations, examples, clarifications, or personalized tips.  
+- Explore deeper understanding through Socratic-style dialogue.
 
-Example prompts:
-- "Explain photosynthesis in simple terms"
-- "Quiz me on Newton's Laws"
-- "Give me study tips for biology"
-- "What's the difference between X and Y?"
+**Example prompts:**  
+- “Explain photosynthesis in simple terms.”  
+- “Quiz me on Newton’s laws.”  
+- “Give me study tips for biology.”  
+- “What’s the difference between X and Y?”  
+- “Help me understand this paragraph I uploaded.”
 
 ### 4. Practice with Flashcards
 
-**Spaced Repetition**
-- Visit "🎯 Practice" tab
-- Click flashcards to reveal answers
-- Rate your understanding (Again, Hard, Good, Easy)
-- System automatically schedules optimal reviews
+**Spaced Repetition**  
+- Visit the **🎯 Practice** tab.  
+- Flip flashcards to reveal answers.  
+- Rate your understanding: **Again**, **Hard**, **Good**, or **Easy**.  
+- The system adjusts review intervals to strengthen long-term memory.
 
 ### 5. Test Your Knowledge
 
-**Quiz Generator**
-- Access "📝 Quiz" tab
-- Select number of questions (5-20)
-- Generate quiz from your concepts
-- Submit answers for instant feedback
+**Quiz Generator**  
+- Go to the **📝 Quiz** tab.  
+- Choose your quiz length (5–20 questions).  
+- Generate quizzes directly from your saved concepts.  
+- Submit answers for instant scoring and feedback.
 
 ### 6. Track Progress
 
-**Analytics Dashboard**
-- Monitor learning statistics
-- View mastery percentages
-- Track study streaks
-- Identify areas needing review
+**Analytics Dashboard**  
+- View detailed learning statistics.  
+- Monitor concept mastery percentages.  
+- Track study streaks and accuracy.  
+- Identify weak areas that need more review.
+
+### 7. Organize Tasks & Assignments
+
+**Study Planner**  
+- Open the **📅 Planner** tab.  
+- Create tasks with due dates and priorities.  
+- Categorize tasks by subject.  
+- Track completion and get alerts for overdue items.
+
+### 8. Customize Learning Depth
+
+**Education Level Settings**  
+- Go to **⚙️ Settings**.  
+- Select your learning level: Elementary, Middle, High School, Undergraduate, Graduate, or Professional.  
+- AI explanations adapt instantly to match your level.  
+- All concept explanations, flashcards, and quizzes adjust accordingly.
+
+### 9. Manage Your Study Experience
+
+**Account & Authentication**  
+- Log in to save your learning permanently.  
+- Use Guest Mode if you prefer temporary sessions.  
+- All data is stored locally on your browser for privacy.  
+- Each account maintains separate concepts, stats, and flashcards.
 
 ---
 
@@ -212,7 +250,7 @@ Example prompts:
 
 <div align="center">
 
-**Built with 🧠 by [Devansh Malhotra](https://github.com/DevanshMalhotra17)**
+**Built by [Devansh Malhotra](https://github.com/DevanshMalhotra17)**
 
 **Learn Smarter, Not Harder**
 

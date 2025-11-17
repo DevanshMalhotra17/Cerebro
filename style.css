@@ -429,3 +429,49 @@ header {
 .chat-container::-webkit-scrollbar-thumb:hover {
     background: #9ca3af;
 }
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.task-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1rem;
+    border-left: 4px solid #3b82f6;
+    transition: all 0.3s;
+}
+
+.task-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.task-card.priority-high {
+    border-left-color: #ef4444;
+}
+
+.task-card.priority-medium {
+    border-left-color: #f59e0b;
+}
+
+.task-card.priority-low {
+    border-left-color: #10b981;
+}
+
+.task-card.completed {
+    opacity: 0.6;
+}
+
+.task-card.completed h6 {
+    text-decoration: line-through;
+}
