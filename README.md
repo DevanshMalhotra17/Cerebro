@@ -77,7 +77,7 @@ Learn how you prefer:
 
 - Node.js v14 or higher
 - npm or yarn
-- OpenRouter API key (optional, for AI features)
+- Gemini API
 
 ### Installation
 
@@ -124,7 +124,7 @@ Learn how you prefer:
 - **CORS** - Cross-origin resource sharing
 
 ### AI Integration
-- **OpenRouter API** - AI model access (Gemini 2.0 Flash)
+- **Gemini API** - AI model access (Gemini 2.0 Flash-Lite)
 - **Local Fallback** - Concept extraction without API
 
 ### Data Storage
